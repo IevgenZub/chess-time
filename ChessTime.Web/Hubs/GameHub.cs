@@ -1,4 +1,5 @@
 ﻿using ChessTime.Web.Core.Model;
+using ChessTime.Web.Hubs.Messages;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;

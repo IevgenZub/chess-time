@@ -1,4 +1,4 @@
-﻿namespace ChessTime.Web.Hubs
+﻿namespace ChessTime.Web.Hubs.Messages
 {
     public class MoveMessage
     {
