@@ -45,8 +45,8 @@ connection.on("GameCreated", function (game) {
         game.whitePlayerId = "open";
     }
 
-    gamesOnline.append("<button id='" + game.id + "'>White: "
-        + game.whitePlayerId + ', Black: ' + game.blackPlayerId + "</button>");
+    gamesOnline.append("<button class='button btn-secondary' id='" + game.id + "'>White</br>"
+        + game.whitePlayerId + '</br>Black</br>' + game.blackPlayerId + "</button>");
 
     $('#' + game.id).click(function (e) {
         joinGame(this.id);
@@ -55,7 +55,7 @@ connection.on("GameCreated", function (game) {
 
 
 connection.on("PlayerJoined", function (playerName) {
-    playersOnline.append('<p>' + playerName + '</p>');
+    playersOnline.append('<p id="' + playerName.split('@')[0] + '">' + playerName + '</p>');
 });
 
 connection.on("GameStarted", function (game) {
@@ -64,11 +64,11 @@ connection.on("GameStarted", function (game) {
         position: 'start',
         onDragStart: onDragStart,
         onDrop: onDrop,
-        orientation: currentUser === game.whitePlayerId ? "white" : "black",
+        orientation: currentUser === game.whitePlayerId.split('@')[0] ? "white" : "black",
         onSnapEnd: onSnapEnd
     };
 
-    $('#' + game.id).text('White:' + game.whitePlayerId + ', Black: ' + game.blackPlayerId);
+    $('#' + game.id).html('White</br>' + game.whitePlayerId + '</br>Black</br>' + game.blackPlayerId);
 
     board = ChessBoard('board', cfg);
 
@@ -87,6 +87,15 @@ connection.on("MoveMade", function (newMove) {
     updateStatus();
 });
 
+connection.on("PlayerDisconnected", function (player) {
+    $('#' + player.split('@')[0]).remove();
+    updateStatus();
+});
+
+connection.on("GameOver", function (game) {
+    $('#' + game.id).remove();
+    updateStatus();
+});
 
 // do not pick up pieces if the game is over
 // only pick up pieces for the side to move

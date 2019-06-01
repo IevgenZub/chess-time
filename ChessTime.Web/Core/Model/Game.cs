@@ -36,5 +36,17 @@ namespace ChessTime.Web.Core.Model
             Status = "Started";
             StartDate = DateTime.Now;
         }
+
+        public Game BlackWins()
+        {
+            Status = "BlackWins";
+            return this;
+        }
+
+        public Game WhiteWins()
+        {
+            Status = "WhiteWins";
+            return this;
+        }
     }
 }

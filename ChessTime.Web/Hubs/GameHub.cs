@@ -24,7 +24,16 @@ namespace ChessTime.Web.Hubs
         public async Task StartGame(string color)
         {
             var player = Context.User.Identity.Name;
-            var game = new Game(player, color);
+            var game = _games.FirstOrDefault(g => g.BlackPlayerId == player && g.WhitePlayerId == player);
+            if (game == null)
+            {
+                game = new Game(player, color);
+            }
+            else
+            {
+                _games.RemoveWhere(g => g.WhitePlayerId == player || g.BlackPlayerId == player);
+            }
+
             _games.Add(game);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, game.Id);
@@ -51,5 +60,24 @@ namespace ChessTime.Web.Hubs
 
             await base.OnConnectedAsync();
         }
+
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            var player = Context.User.Identity.Name;
+
+            foreach (var game in _games.Where(g => g.WhitePlayerId == player || g.BlackPlayerId == player))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, game.Id);
+                await Clients.All.SendAsync("GameOver", player == game.WhitePlayerId ? 
+                        game.BlackWins() : game.WhiteWins());
+            }
+
+            _games.RemoveWhere(g => g.WhitePlayerId == player || g.BlackPlayerId == player);
+
+            await Clients.All.SendAsync("PlayerDisconnected", player);
+
+            await base.OnDisconnectedAsync(exception);
+        }
+
     }
 }

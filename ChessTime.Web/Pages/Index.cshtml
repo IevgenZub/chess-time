@@ -46,6 +46,6 @@
     <script src="~/lib/@@aspnet/signalr/dist/browser/signalr.js"></script>
     <script src="~/js/index.js"></script>
     <script>
-        var currentUser = '@HttpContext.User.Identity.Name';
+        var currentUser = '@HttpContext.User.Identity.Name.Split('@')[0]';
     </script>
 }
