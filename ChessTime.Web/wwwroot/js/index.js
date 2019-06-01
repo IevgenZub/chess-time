@@ -1,8 +1,92 @@
-﻿
+﻿// ================ Declarations =================================================================
 var board,
     game = new Chess(),
     statusEl = $('#status'),
-    pgnEl = $('#pgn');
+    pgnEl = $('#pgn'),
+    playersOnline = $('#playersOnline'),
+    gamesOnline = $('#gamesOnline');
+
+var connection = new signalR.HubConnectionBuilder().withUrl("/game-hub").build();
+
+
+// ================ Client event handlers =======================================================
+
+connection.start().then(function () {
+    console.log("started");
+    $('#btnStartWhite').click(function () {
+        connection.invoke("StartGame", "white").catch(function (err) {
+            return console.error(err.toString());
+        });
+    });
+    $('#btnStartBlack').click(function () {
+        connection.invoke("StartGame", "black").catch(function (err) {
+            return console.error(err.toString());
+        });
+    });
+}).catch(function (err) {
+    return console.error(err.toString());
+});
+
+function joinGame(gameId) {
+    connection.invoke("JoinGame", gameId).catch(function (err) {
+        return console.error(err.toString());
+    });
+}
+
+
+// ================ Client side methods to call from server with SignalR =======================
+
+connection.on("GameCreated", function (game) {
+    if (game.blackPlayerId === null) {
+        game.blackPlayerId = "open";
+    }
+
+    if (game.whitePlayerId === null) {
+        game.whitePlayerId = "open";
+    }
+
+    gamesOnline.append("<button id='" + game.id + "'>White: "
+        + game.whitePlayerId + ', Black: ' + game.blackPlayerId + "</button>");
+
+    $('#' + game.id).click(function (e) {
+        joinGame(this.id);
+    });
+});
+
+
+connection.on("PlayerJoined", function (playerName) {
+    playersOnline.append('<p>' + playerName + '</p>');
+});
+
+connection.on("GameStarted", function (game) {
+    var cfg = {
+        draggable: true,
+        position: 'start',
+        onDragStart: onDragStart,
+        onDrop: onDrop,
+        orientation: currentUser === game.whitePlayerId ? "white" : "black",
+        onSnapEnd: onSnapEnd
+    };
+
+    $('#' + game.id).text('White:' + game.whitePlayerId + ', Black: ' + game.blackPlayerId);
+
+    board = ChessBoard('board', cfg);
+
+    updateStatus();
+});
+
+connection.on("MoveMade", function (newMove) {
+    var move = game.move({
+        from: newMove.from,
+        to: newMove.to,
+        promotion: 'q'
+    });
+
+    board.move(move.from + "-" + move.to);
+
+    updateStatus();
+});
+
 
 // do not pick up pieces if the game is over
 // only pick up pieces for the side to move
@@ -25,7 +109,7 @@ var onDrop = function (source, target) {
     // illegal move
     if (move === null) return 'snapback';
 
-    connection.invoke("SendMove", move).catch(function (err) {
+    connection.invoke("MakeMove", move).catch(function (err) {
         return console.error(err.toString());
     });
 
@@ -69,38 +153,3 @@ var updateStatus = function () {
     statusEl.html(status);
     pgnEl.html(game.pgn());
 };
-
-
-var connection = new signalR.HubConnectionBuilder().withUrl("/game-hub").build();
-
-connection.on("ReceiveMove", function (newMove) {
-    var move = game.move({
-        from: newMove.from,
-        to: newMove.to,
-        promotion: 'q'
-    });
-
-    board.move(move.from + "-" + move.to);
-
-    updateStatus();
-});
-
-connection.on("StartGame", function (color) {
-    var cfg = {
-        draggable: true,
-        position: 'start',
-        onDragStart: onDragStart,
-        onDrop: onDrop,
-        orientation: color,
-        onSnapEnd: onSnapEnd
-    };
-    board = ChessBoard('board', cfg);
-
-    updateStatus();
-});
-
-connection.start().then(function () {
-    console.log("started");
-}).catch(function (err) {
-    return console.error(err.toString());
-});

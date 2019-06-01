@@ -14,11 +14,20 @@ namespace ChessTime.Web.Core.Model
         public string Status { get; private set; }
         public DateTime StartDate { get; private set; }
 
-        public Game(string creatorId)
+        public Game(string creatorId, string color)
         {
             Id = Guid.NewGuid().ToString();
             Status = "Created";
-            WhitePlayerId = creatorId;
+
+            if (color == "white")
+            {
+                WhitePlayerId = creatorId;
+            }
+
+            if (color == "black")
+            {
+                BlackPlayerId = creatorId;
+            }
         }
 
         public void Join(string playerId)
