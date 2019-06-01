@@ -11,6 +11,10 @@
                 Players online
             </div>
             <div id="playersOnline" class="card-body">
+                @foreach (var player in Model.Players)
+                {
+                    <p id="@player.Name.Split('@')[0]">@player.Name</p>
+                }
             </div>
         </div>
         <br />
@@ -23,6 +27,18 @@
                 Games online
             </div>
             <div id="gamesOnline" class="card-body">
+                @foreach (var game in Model.Games)
+                {
+                    <button class="button btn-secondary" id="@game.Id">
+                        White  
+                        <br />
+                        @game.WhitePlayerId 
+                        <br />
+                        Black 
+                        <br />
+                        @game.BlackPlayerId 
+                    </button>
+                }
             </div>
         </div>
     </div>

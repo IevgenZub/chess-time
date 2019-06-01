@@ -45,8 +45,8 @@ connection.on("GameCreated", function (game) {
         game.whitePlayerId = "open";
     }
 
-    gamesOnline.append("<button class='button btn-secondary' id='" + game.id + "'>White</br>"
-        + game.whitePlayerId + '</br>Black</br>' + game.blackPlayerId + "</button>");
+    gamesOnline.append("<button class='button btn-secondary' id='" + game.id + "'>White<br />"
+        + game.whitePlayerId + '<br />Black<br />' + game.blackPlayerId + "</button>");
 
     $('#' + game.id).click(function (e) {
         joinGame(this.id);
@@ -68,7 +68,7 @@ connection.on("GameStarted", function (game) {
         onSnapEnd: onSnapEnd
     };
 
-    $('#' + game.id).html('White</br>' + game.whitePlayerId + '</br>Black</br>' + game.blackPlayerId);
+    $('#' + game.id).html('White<br />' + game.whitePlayerId + '<br />Black<br />' + game.blackPlayerId);
 
     board = ChessBoard('board', cfg);
 
