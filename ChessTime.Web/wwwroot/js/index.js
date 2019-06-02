@@ -59,12 +59,15 @@ connection.on("PlayerJoined", function (playerName) {
 });
 
 connection.on("GameStarted", function (game) {
+
+    var whitePlayer = game.whitePlayerId !== null ? game.whitePlayerId.split('@')[0] : "";
+
     var cfg = {
         draggable: true,
         position: 'start',
         onDragStart: onDragStart,
         onDrop: onDrop,
-        orientation: currentUser === game.whitePlayerId.split('@')[0] ? "white" : "black",
+        orientation: currentUser === whitePlayer ? "white" : "black",
         onSnapEnd: onSnapEnd
     };
 

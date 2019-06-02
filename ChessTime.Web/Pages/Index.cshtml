@@ -29,7 +29,7 @@
             <div id="gamesOnline" class="card-body">
                 @foreach (var game in Model.Games)
                 {
-                    <button class="button btn-secondary" id="@game.Id">
+                    <button class="button btn-secondary" onclick="joinGame('@game.Id')" id="@game.Id">
                         White  
                         <br />
                         @game.WhitePlayerId 

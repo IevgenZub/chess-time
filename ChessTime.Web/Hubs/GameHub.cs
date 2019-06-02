@@ -24,16 +24,9 @@ namespace ChessTime.Web.Hubs
         public async Task StartGame(string color)
         {
             var player = Context.User.Identity.Name;
-            var game = Games.FirstOrDefault(g => g.BlackPlayerId == player && g.WhitePlayerId == player);
-            if (game == null)
-            {
-                game = new Game(player, color);
-            }
-            else
-            {
-                Games.RemoveWhere(g => g.WhitePlayerId == player || g.BlackPlayerId == player);
-            }
+            await RemoveExistingGames(player);
 
+            var game = new Game(player, color);
             Games.Add(game);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, game.Id);
@@ -43,8 +36,9 @@ namespace ChessTime.Web.Hubs
         public async Task JoinGame(string gameId)
         {
             var player = Context.User.Identity.Name;
-            var game = Games.FirstOrDefault(g => g.Id == gameId);
+            await RemoveExistingGames(player);
 
+            var game = Games.FirstOrDefault(g => g.Id == gameId);
             game.Join(player);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, game.Id);
@@ -64,20 +58,24 @@ namespace ChessTime.Web.Hubs
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             var player = Context.User.Identity.Name;
-
-            foreach (var game in Games.Where(g => g.WhitePlayerId == player || g.BlackPlayerId == player))
-            {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, game.Id);
-                await Clients.All.SendAsync("GameOver", player == game.WhitePlayerId ? 
-                        game.BlackWins() : game.WhiteWins());
-            }
-
-            Games.RemoveWhere(g => g.WhitePlayerId == player || g.BlackPlayerId == player);
+            Players.RemoveWhere(p => p.Name == player);
+            await RemoveExistingGames(player);
 
             await Clients.All.SendAsync("PlayerDisconnected", player);
 
             await base.OnDisconnectedAsync(exception);
         }
 
+        private async Task RemoveExistingGames(string player)
+        {
+            foreach (var game in Games.Where(g => g.WhitePlayerId == player || g.BlackPlayerId == player))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, game.Id);
+                await Clients.All.SendAsync("GameOver", player == game.WhitePlayerId ?
+                        game.BlackWins() : game.WhiteWins());
+            }
+
+            Games.RemoveWhere(g => g.WhitePlayerId == player || g.BlackPlayerId == player);
+        }
     }
 }

@@ -32,7 +32,15 @@ namespace ChessTime.Web.Core.Model
 
         public void Join(string playerId)
         {
-            BlackPlayerId = playerId;
+            if (string.IsNullOrEmpty(BlackPlayerId))
+            {
+                BlackPlayerId = playerId;
+            }
+            else if (string.IsNullOrEmpty(WhitePlayerId))
+            {
+                WhitePlayerId = playerId;
+            }
+
             Status = "Started";
             StartDate = DateTime.Now;
         }
