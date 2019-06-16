@@ -21,16 +21,25 @@ namespace ChessTime.Web.Hubs
             await Clients.OthersInGroup(game.Id).SendAsync("MoveMade", message);
         }
 
-        public async Task StartGame(string color)
+        public async Task Play()
         {
             var player = Context.User.Identity.Name;
             await RemoveExistingGames(player);
 
-            var game = new Game(player, color);
-            Games.Add(game);
+            var game = Games.FirstOrDefault(g => g.BlackPlayerId == null || g.WhitePlayerId == null);
+            if (game == null)
+            {
+                var color = new Random().Next(100) > 50 ? "white" : "black";
+                game = new Game(player, color);
+                Games.Add(game);
+            }
+            else
+            {
+                game.Join(player);
+                await Clients.All.SendAsync("GameStarted", game);
+            }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, game.Id);
-            await Clients.All.SendAsync("GameCreated", game);
         }
 
         public async Task JoinGame(string gameId)

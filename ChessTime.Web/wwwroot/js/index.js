@@ -13,44 +13,13 @@ var connection = new signalR.HubConnectionBuilder().withUrl("/game-hub").build()
 
 connection.start().then(function () {
     console.log("started");
-    $('#btnStartWhite').click(function () {
-        connection.invoke("StartGame", "white").catch(function (err) {
-            return console.error(err.toString());
-        });
-    });
-    $('#btnStartBlack').click(function () {
-        connection.invoke("StartGame", "black").catch(function (err) {
+    $('#btnPlay').click(function () {
+        connection.invoke("Play").catch(function (err) {
             return console.error(err.toString());
         });
     });
 }).catch(function (err) {
     return console.error(err.toString());
-});
-
-function joinGame(gameId) {
-    connection.invoke("JoinGame", gameId).catch(function (err) {
-        return console.error(err.toString());
-    });
-}
-
-
-// ================ Client side methods to call from server with SignalR =======================
-
-connection.on("GameCreated", function (game) {
-    if (game.blackPlayerId === null) {
-        game.blackPlayerId = "open";
-    }
-
-    if (game.whitePlayerId === null) {
-        game.whitePlayerId = "open";
-    }
-
-    gamesOnline.append("<button class='button btn-secondary' id='" + game.id + "'>White<br />"
-        + game.whitePlayerId + '<br />Black<br />' + game.blackPlayerId + "</button>");
-
-    $('#' + game.id).click(function (e) {
-        joinGame(this.id);
-    });
 });
 
 
@@ -70,8 +39,6 @@ connection.on("GameStarted", function (game) {
         orientation: currentUser === whitePlayer ? "white" : "black",
         onSnapEnd: onSnapEnd
     };
-
-    $('#' + game.id).html('White<br />' + game.whitePlayerId + '<br />Black<br />' + game.blackPlayerId);
 
     board = ChessBoard('board', cfg);
 
